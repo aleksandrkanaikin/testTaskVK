@@ -2,7 +2,7 @@ package org.example.testtaskvk.controllers;
 
 import org.example.testtaskvk.models.User;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.client.RestTemplate;
@@ -13,11 +13,13 @@ public class UsersController {
     @Autowired
     private RestTemplate restTemplate;
 
+    @Cacheable("usersCache")
     @GetMapping
     public String getUsers() {
          return restTemplate.getForObject("https://jsonplaceholder.typicode.com/users", String.class);
     }
 
+    @Cacheable("userByIdCache")
     @GetMapping("/{id}")
     public User getUserById(@PathVariable int id) {
         return restTemplate.getForObject("https://jsonplaceholder.typicode.com/users/" + id, User.class);
@@ -29,12 +31,12 @@ public class UsersController {
     }
 
     @PutMapping("/{id}")
-    public String updateUserById(@PathVariable int id) {
-        return restTemplate.getForObject("https://jsonplaceholder.typicode.com/users/" + id, String.class);
+    public void updateUserById(@PathVariable int id, @RequestBody User updateUser) {
+        restTemplate.put("https://jsonplaceholder.typicode.com/users/" + id, updateUser, String.class);
     }
 
     @PostMapping
-    public ResponseEntity<User> postUser(@RequestBody User newUser){
-        return restTemplate.postForEntity("https://jsonplaceholder.typicode.com/users", newUser, User.class);
+    public ResponseEntity<String> postUser(@RequestBody User newUser){
+        return restTemplate.postForEntity("https://jsonplaceholder.typicode.com/users", newUser, String.class);
     }
 }
